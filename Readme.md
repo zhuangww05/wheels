@@ -3,3 +3,4 @@
 - call&apply
 - bind
 - new
+- 模板字符串 tamplate
