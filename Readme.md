@@ -4,3 +4,4 @@
 - bind
 - new
 - 模板字符串 tamplate
+- 实现简易Symbol

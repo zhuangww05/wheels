@@ -10,6 +10,7 @@
     })()
 
     const SymbolPolyfill = function (description) {
+        // ???
         if(this instanceof SymbolPolyfill) throw new TypeError("SymbolPolyfill is not a constructor")
         const descString = description === undefined ? undefined : Object.prototype.toString.call(description)
         const symbol = Object.create({
