@@ -1,0 +1,2 @@
+
+[# 在条件类型里推断（Inferring Within Conditional Types）](https://ts.yayujs.com/handbook/ConditionalTypes.html#%E5%9C%A8%E6%9D%A1%E4%BB%B6%E7%B1%BB%E5%9E%8B%E9%87%8C%E6%8E%A8%E6%96%AD-inferring-within-conditional-types)

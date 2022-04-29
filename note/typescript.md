@@ -380,6 +380,7 @@ class Person {
 	name: "zhuangww05"
 }
 typeof result = keyof Person
+
 // typeof result = "name"
 ```
 
@@ -388,6 +389,7 @@ interface Person {
 	name: string
 }
 typeof result = keyof Person
+
 // typeof result = "name"
 ```
 
@@ -396,6 +398,7 @@ typeof result = keyof Person
 ```javascript
 type Predicate = (x: unknow) => boolean
 type P = ReturnType<Predicate>
+
 // type P = boolean
 
 function f() {
@@ -405,6 +408,7 @@ function f() {
 	}
 }
 type F = ReturnType<typeof f>
+
 //type F = {
 //	x: number;
 //	y: number;
@@ -422,13 +426,16 @@ type Person = {
 
 type P1 = Person["name"]
 // string
+
 type P2 = Person["name" | "age"]
 // string | number
+
 type P3 = Person[keyof Person]
 // string | number | boolean
 
 const key = "age"
 type Age = Person[key]
+
 // Type 'key' cannot be used as an index type.
 ```
 
@@ -440,6 +447,7 @@ const MyArray = [
 ];
 
 type M = typeof MyArray[number]
+
 // type M = {
 //    name: string;
 //    age: number;
@@ -451,6 +459,189 @@ type M = typeof MyArray[number]
 ```javascript
 const App = ["Taobao", "Tmall", "Alipay"] as const
 type app = typeof App[number]
+
 // type app = "Taobao" | "Tmall" | "Alipay"
 
+```
+
+#### # 条件类型
+```javascript
+interface Animal = {
+    name: number;
+}
+
+interface Cat extends Animal {
+    age: number;
+}
+
+type T = Cat extends Animal ? number : string
+
+// type T = number
+```
+```javascript
+interface IdLabel {
+    id: number;
+}
+interface NameLabel {
+    name: string;
+}
+
+// 复杂重载
+function createLabel(id: number): IdLabel;
+function createLabel(name: string): NameLabel;
+function createLabel(nameOrId: string | number): IdLabel | NameLabel;
+function createLabel(nameOrId: string | number): IdLabel | NameLabel {
+  throw "unimplemented";
+}
+
+// 简化重载
+type NameOrId<T extends number | string> = T extends IdLabel ? number : string
+function createLabel<T extends nume | string>(idOrName: T): NameOrId<T> {}
+const a = createLabel("typescript");
+// let a: NameLabel
+
+const b = createLabel(2.8);
+// let b: IdLabel
+
+const c = createLabel(Math.random() ? "hello" : 42);
+// let c: NameLabel | IdLabel
+```
+
+#### # 条件类型约束
+```javascript
+interface Message {
+    message: string;
+}
+type M<T> = T extends { message: unknow } ? T["message"] : never
+type E = M<Message>
+
+// type E = strubg 
+```
+获取数组元素的类型，当传入的不是数组，则直接返回传入的类型
+```javascript
+type Flatten<T> = T extends any[] ? T[number] : T
+type A = {
+  age: number;
+  name: string;
+};
+
+type Str = Flatten<A[]>;
+
+// type Str = { age: number, name: string }
+```
+#### # 条件类型分发
+```javascript
+type M<T> = T extends any ? T[] : boolean
+
+type A = M<number | string>
+
+// type A = number[] | string[]
+```
+```javascript
+type M<T> = [T] extends [any] ? T[] | boolean
+
+type A = M<number | string>
+
+// type A = (number | string)[]
+```
+
+#### # 映射类型
+```javascript
+type OptionsFlags<T> = {
+  [Property in keyof T]: boolean;
+}
+
+type FeatureFlags = {
+  darkMode: () => void;
+  newUserProfile: () => void;
+};
+
+type F = OptionsFlags<FeatureFlags>
+
+// type F = { darkMode: boolean; newUserProfile: boolean; }
+```
+映射修饰符
+```javascript
+type CreateMutable<T> = {
+  - readonly [Property in keyof T] - ?: T[Property]
+}
+
+type LockedAccount = {
+  readonly id: string;
+  readonly name: string;
+  readonly age?: number;
+};
+
+type UnLockedAccount = CreateMutable<LockedAccount>
+
+// type UnLockedAccount = { id: string; name: string; age: number }
+```
+结合
+```javascript
+type ExtractPII<T> = {
+  [Property in keyof T]: T[Property] extends { pii: true } ? true : false;
+}
+
+type DBFields = {
+  id: { format: "incrementing" };
+  name: { type: string; pii: true }
+}
+
+type D = ExtractPII<DBFields>
+
+// type D = {
+//    id: false;
+//    name: true;
+// }
+```
+键名重新映射
+```javascript
+type Getters<T> = {
+  [Property in keyof T as `get${Capitalize<string & Property>}`]: () => T[Property];
+}
+
+interface Person {
+  name: string;
+  age: number;
+  location: string;
+}
+
+type LazyPerson = Getters<Person>
+
+// type LazyPerson = {
+//    getName: () => string;
+//    getAge: () => number;
+//    getLocation: () => string;
+// }
+```
+```javascript
+type RemoveKindField<T> = {
+  [Property in keyof T as Exclude<Property, 'kind'>]: () => T[Property];
+}
+
+interface Circle {
+    kind: "circle";
+    radius: number;
+}
+
+type KindLessCirlce = RemoveKindField<Circle>
+
+// type KindlessCircle = {
+//    radius: number;
+// }
+```
+```javascript
+type EventConfig<Events extends { kind: string }> = {
+  [E in Events as E["kind"]]: (event: E) => void
+}
+
+type SquareEvent = { kind: "square", x: number, y: number };
+type CircleEvent = { kind: "circle", radius: number };
+ 
+type Config = EventConfig<SquareEvent | CircleEvent>
+
+// type Config = {
+//  square: (event: SquareEvent) => void;
+//  circle: (event: CircleEvent) => void;
+//}
 ```
